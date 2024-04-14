@@ -30,7 +30,7 @@ void AGreedyChunk::BeginPlay()
 
 	Blocks.SetNum(ChunkSize.X * ChunkSize.Y * ChunkSize.Z);
 
-	Noise->SetupFastNoise(EFastNoise_NoiseType::Perlin, 5673, 0.003f, EFastNoise_Interp::Quintic, EFastNoise_FractalType::FBM, 3, 2, 0.2, 0.2);
+	Noise->SetupFastNoise(EFastNoise_NoiseType::Perlin, 1337, 0.003f, EFastNoise_Interp::Quintic, EFastNoise_FractalType::FBM, 3, 2, 0.2, 0.2);
 
 
 	GenerateBlocks();
@@ -49,7 +49,7 @@ void AGreedyChunk::GenerateBlocks()
 			const float Xpos = (x * VoxelSize + Location.X) / VoxelSize;
 			const float Ypos = (y * VoxelSize + Location.Y) / VoxelSize;
 
-			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise2D(Xpos, Ypos) + 1) * ChunkSize.Z / 2), 0, ChunkSize.Z);
+			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise2D(Xpos, Ypos) + 1) * ChunkSize.Z * 0.8f), 0, ChunkSize.Z);
 
 			for (int z = 0; z < Height; z++)
 			{
@@ -83,7 +83,7 @@ void AGreedyChunk::ApplyMesh()
 
 void AGreedyChunk::GenerateMesh()
 {
-	Thread = new AMeshThread(this);
+	MeshThread = new AMeshThread(this);
 }
 
 
@@ -97,7 +97,7 @@ void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 
 	ClearMesh();
 
-	//GenerateMesh();
+	GenerateMesh();
 
 	ApplyMesh();
 }
@@ -122,6 +122,9 @@ bool AGreedyChunk::CompareMask(FMask M1, FMask M2) const
 
 void AGreedyChunk::ClearMesh()
 {
-	MeshData->VertexCount = 0;
-	MeshData->Clear();
+	TQueue<FChunkMeshData>::FElementType data;
+	if (!MeshDataQueue.IsEmpty() && MeshDataQueue.Dequeue(data))
+	{
+		data.Clear();
+	}
 }

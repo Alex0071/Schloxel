@@ -27,4 +27,5 @@ inline void FChunkMeshData::Clear()
 	Normals.Empty();
 	Colors.Empty();
 	UV0.Empty();
+	VertexCount = 0;
 }

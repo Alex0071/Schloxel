@@ -70,7 +70,6 @@ private:
 
 	void ClearMesh();
 
-	FChunkMeshData* MeshData;
 
-	AMeshThread* Thread;
+	AMeshThread* MeshThread;
 };

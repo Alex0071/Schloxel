@@ -277,6 +277,5 @@ bool AGreedyChunkSlow::CompareMask(FMask M1, FMask M2) const
 
 void AGreedyChunkSlow::ClearMesh()
 {
-	MeshData.VertexCount = 0;
 	MeshData.Clear();
 }
