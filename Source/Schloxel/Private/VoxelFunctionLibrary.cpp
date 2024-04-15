@@ -8,7 +8,7 @@ FIntVector UVoxelFunctionLibrary::WorldToBlockPosition(const FVector& Position)
 	return FIntVector(Position) / 10;
 }
 
-FIntVector UVoxelFunctionLibrary::WorldToLocalBlockPosition(const FVector& Position, const int Size)
+FIntVector UVoxelFunctionLibrary::WorldToLocalBlockPosition(const FVector& Position, const FIntVector Size)
 {
 	const auto ChunkPosition = WorldToChunkPosition(Position, Size);
 
@@ -22,21 +22,21 @@ FIntVector UVoxelFunctionLibrary::WorldToLocalBlockPosition(const FVector& Posit
 	return Result;
 }
 
-FIntVector UVoxelFunctionLibrary::WorldToChunkPosition(const FVector& Position, const int Size)
+FIntVector UVoxelFunctionLibrary::WorldToChunkPosition(const FVector& Position, const FIntVector Size)
 {
 	FIntVector Result;
 
-	const int Factor = Size * 10;
+	const FIntVector Factor = Size * 10;
 	const auto IntPosition = FIntVector(Position);
 
-	if (IntPosition.X < 0) Result.X = (int)(Position.X / Factor) - 1;
-	else Result.X = (int)(Position.X / Factor);
+	if (IntPosition.X < 0) Result.X = static_cast<int>(Position.X / Factor.X) - 1;
+	else Result.X = static_cast<int>(Position.X / Factor.X);
 
-	if (IntPosition.X < 0) Result.Y = (int)(Position.Y / Factor) - 1;
-	else Result.Y = (int)(Position.Y / Factor);
+	if (IntPosition.X < 0) Result.Y = static_cast<int>(Position.Y / Factor.Y) - 1;
+	else Result.Y = static_cast<int>(Position.Y / Factor.Y);
 
-	if (IntPosition.Z < 0) Result.Z = (int)(Position.Z / Factor) - 1;
-	else Result.Z = (int)(Position.Z / Factor);
+	if (IntPosition.Z < 0) Result.Z = static_cast<int>(Position.Z / Factor.Z) - 1;
+	else Result.Z = static_cast<int>(Position.Z / Factor.Z);
 
 	return Result;
 }

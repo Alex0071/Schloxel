@@ -19,8 +19,8 @@ class UVoxelFunctionLibrary : public UBlueprintFunctionLibrary
 
 
 	UFUNCTION(BlueprintPure, Category="Voxel")
-	static FIntVector WorldToLocalBlockPosition(const FVector& Position, const int Size);
+	static FIntVector WorldToLocalBlockPosition(const FVector& Position, const FIntVector Size);
 
 	UFUNCTION(BlueprintPure, Category="Voxel")
-	static FIntVector WorldToChunkPosition(const FVector& Position, const int Size);
+	static FIntVector WorldToChunkPosition(const FVector& Position, const FIntVector Size);
 };

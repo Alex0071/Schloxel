@@ -19,9 +19,9 @@ void AChunkWorld::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (int x = -DrawDistance; x <= DrawDistance; x++)
+	for (int x = 0; x < DrawDistance; x++)
 	{
-		for (int y = -DrawDistance; y <= DrawDistance; y++)
+		for (int y = 0; y < DrawDistance; y++)
 		{
 			auto transform = FTransform(
 				FRotator::ZeroRotator,
