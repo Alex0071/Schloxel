@@ -49,7 +49,7 @@ void AGreedyChunk::GenerateBlocks()
 			const float Xpos = (x * VoxelSize + Location.X) / VoxelSize;
 			const float Ypos = (y * VoxelSize + Location.Y) / VoxelSize;
 
-			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise2D(Xpos, Ypos) + 1) * ChunkSize.Z * 0.8f), 0, ChunkSize.Z);
+			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise2D(Xpos, Ypos) + 1) * ChunkSize.Z * 0.6), 0, ChunkSize.Z);
 
 			for (int z = 0; z < Height; z++)
 			{
@@ -74,8 +74,6 @@ void AGreedyChunk::ApplyMesh()
 		{
 			Mesh->SetMaterial(0, Material);
 			Mesh->CreateMeshSection(0, data.Vertices, data.Triangles, data.Normals, data.UV0, data.Colors, TArray<FProcMeshTangent>(), true);
-
-			UE_LOG(LogTemp, Warning, TEXT("%i"), Blocks.Num());
 		}
 	});
 }
@@ -92,6 +90,7 @@ void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 	if (Position.X >= ChunkSize.X || Position.Y >= ChunkSize.Y || Position.Z >= ChunkSize.Z || Position.X < 0 || Position.Y < 0 || Position.Z < 0) return;
 
 	const int Index = GetBlockIndex(Position.X, Position.Y, Position.Z);
+
 
 	Blocks[Index] = Block;
 
