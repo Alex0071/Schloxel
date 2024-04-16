@@ -89,10 +89,24 @@ void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 {
 	if (Position.X >= ChunkSize.X || Position.Y >= ChunkSize.Y || Position.Z >= ChunkSize.Z || Position.X < 0 || Position.Y < 0 || Position.Z < 0) return;
 
-	const int Index = GetBlockIndex(Position.X, Position.Y, Position.Z);
+	constexpr int Radius = 8;
 
-
-	Blocks[Index] = Block;
+	// Iterate through all positions within a limited range
+	for (int x = -Radius + 1; x <= Radius - 1; ++x)
+	{
+		for (int y = -Radius + 1; y <= Radius - 1; ++y)
+		{
+			for (int z = -Radius + 1; z <= Radius - 1; ++z)
+			{
+				float distance = FVector::Dist(FVector(x, y, z), FVector::ZeroVector);
+				if (distance <= Radius)
+				{
+					const int index = GetBlockIndex(Position.X + x, Position.Y + y, Position.Z + z);
+					Blocks[index] = Block;
+				}
+			}
+		}
+	}
 
 	ClearMesh();
 
