@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 UENUM(BlueprintType)
-enum class EDirection : uint8
+enum class EBlockDirection : uint8
 {
 	Forward,
 	Right,

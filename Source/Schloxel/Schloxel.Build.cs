@@ -9,7 +9,7 @@ public class Schloxel : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
-			{ "Core", "CoreUObject", "Engine", "InputCore", "FastNoise", "FastNoiseGenerator" });
+			{ "Core", "CoreUObject", "Engine", "InputCore", "FastNoise", "FastNoiseGenerator", "RealtimeMeshComponent" });
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 			{ "ProceduralMeshComponent" });
