@@ -59,7 +59,7 @@ void AGreedyChunk::GenerateBlocks()
 
 			for (int z = Height; z < ChunkSize.Z; z++)
 			{
-				Blocks[GetBlockIndex(x, y, x)] = EBlock::Air;
+				Blocks[GetBlockIndex(x, y, z)] = EBlock::Air;
 			}
 		}
 	}
