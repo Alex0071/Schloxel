@@ -6,6 +6,9 @@
 #include "Enums.h"
 #include "FastNoiseWrapper.h"
 #include "MeshThread.h"
+#include "Engine/Texture2D.h"
+#include "PixelFormat.h"
+#include "Math/UnrealMathUtility.h"
 
 #include "ProceduralMeshComponent.h"
 
@@ -63,6 +66,55 @@ void AGreedyChunk::GenerateBlocks()
 			}
 		}
 	}
+}
+
+float GetPixelBrightness(UTexture2D* Texture, int32 X, int32 Y, bool bUseLuminance = true)
+{
+	if (!Texture)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Texture is null!"));
+		return 0.0f;
+	}
+
+	FTexture2DMipMap* Mip = &Texture->GetPlatformData()->Mips[0];
+	FColor* Pixels = static_cast<FColor*>(Mip->BulkData.Lock(LOCK_READ_ONLY));
+
+	if (!Pixels)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Could not lock texture data!"));
+		return 0.0f;
+	}
+
+	int32 Width = Mip->SizeX;
+	int32 Height = Mip->SizeY;
+
+	// Check if coordinates are within bounds
+	if (X < 0 || X >= Width || Y < 0 || Y >= Height)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Pixel coordinates out of bounds!"));
+		Mip->BulkData.Unlock();
+		return 0.0f;
+	}
+
+	FColor Pixel = Pixels[Y * Width + X];
+	Mip->BulkData.Unlock();
+
+	FLinearColor LinearColor = Pixel.ReinterpretAsLinear();
+
+	float Brightness = 0.0f;
+
+	if (bUseLuminance)
+	{
+		// Luminance calculation (more perceptually accurate)
+		Brightness = LinearColor.R * 0.2126f + LinearColor.G * 0.7152f + LinearColor.B * 0.0722f;
+	}
+	else
+	{
+		// Simple average of RGB
+		Brightness = (LinearColor.R + LinearColor.G + LinearColor.B) / 3.0f;
+	}
+
+	return Brightness; // Already in 0-1 range because of Linear Color
 }
 
 void AGreedyChunk::ApplyMesh()
