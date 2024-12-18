@@ -53,7 +53,7 @@ void AGreedyChunk::GenerateBlocks()
 			const float Ypos = (y * VoxelSize + Location.Y) / VoxelSize;
 
 			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise2D(Xpos, Ypos) + 1) * ChunkSize.Z * 0.6), 0, ChunkSize.Z);
-
+			
 			for (int z = 0; z < Height; z++)
 			{
 				Blocks[GetBlockIndex(x, y, z)] = EBlock::Stone;
@@ -114,7 +114,7 @@ float GetPixelBrightness(UTexture2D* Texture, int32 X, int32 Y, bool bUseLuminan
 		Brightness = (LinearColor.R + LinearColor.G + LinearColor.B) / 3.0f;
 	}
 
-	return Brightness; // Already in 0-1 range because of Linear Color
+	return FMath::Lerp(1.0f, 128.0f, Brightness); // Map 0-1 to 1-128
 }
 
 void AGreedyChunk::ApplyMesh()
