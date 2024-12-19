@@ -60,6 +60,7 @@ void AGreedyChunk::GenerateBlocks()
 			// Ensure that height is within the bounds of ChunkSize.Z
 			int32 HeightInt = FMath::Clamp(FMath::RoundToInt(Height), 0, ChunkSize.Z);
 
+
 			// Fill blocks below the height with solid blocks (e.g., Stone)
 			for (int z = 0; z < HeightInt; z++)
 			{

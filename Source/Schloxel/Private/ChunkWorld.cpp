@@ -30,40 +30,46 @@ void AChunkWorld::BeginPlay()
 
 	PrecomputeBrightness(HeightMap);
 
-	UTexture2D* GeneratedHeightmapTexture = CreateHeightmapTextureFromBrightness();
-	ShowHeightmap(GeneratedHeightmapTexture);
+	//UTexture2D* GeneratedHeightmapTexture = CreateHeightmapTextureFromBrightness();
+	//ShowHeightmap(GeneratedHeightmapTexture);
 
 
-	//SpawnChunks();
+	SpawnChunks();
 }
 
 void AChunkWorld::SpawnChunks()
 {
-	auto transform = FTransform(
-		FRotator::ZeroRotator,
-		FVector(0 * ChunkSize.X * VoxelSize, 0 * ChunkSize.Y * VoxelSize, 0),
-		FVector::OneVector
-	);
-	if (Cast<AGreedyChunk>(Chunk.GetDefaultObject()))
+	for (int x = 0; x < DrawDistance; x++)
 	{
-		const auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunk>(Chunk, transform, this);
+		for (int y = 0; y < DrawDistance; y++)
+		{
+			auto transform = FTransform(
+				FRotator::ZeroRotator,
+				FVector(x * ChunkSize.X * VoxelSize, y * ChunkSize.Y * VoxelSize, 0),
+				FVector::OneVector
+			);
+			if (Cast<AGreedyChunk>(Chunk.GetDefaultObject()))
+			{
+				const auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunk>(Chunk, transform, this);
 
-		chunk->Material = Material;
-		chunk->ChunkSize = ChunkSize;
-		chunk->VoxelSize = VoxelSize;
-		chunk->CachedBrightnessMap = &CachedBrightnessMap;
+				chunk->Material = Material;
+				chunk->ChunkSize = ChunkSize;
+				chunk->VoxelSize = VoxelSize;
+				chunk->CachedBrightnessMap = &CachedBrightnessMap;
 
-		UGameplayStatics::FinishSpawningActor(chunk, transform);
-	}
-	if (Cast<AGreedyChunkSlow>(Chunk.GetDefaultObject()))
-	{
-		const auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunkSlow>(Chunk, transform, this);
+				UGameplayStatics::FinishSpawningActor(chunk, transform);
+			}
+			if (Cast<AGreedyChunkSlow>(Chunk.GetDefaultObject()))
+			{
+				const auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunkSlow>(Chunk, transform, this);
 
-		chunk->Material = Material;
-		chunk->ChunkSize = ChunkSize;
-		chunk->VoxelSize = VoxelSize;
+				chunk->Material = Material;
+				chunk->ChunkSize = ChunkSize;
+				chunk->VoxelSize = VoxelSize;
 
-		UGameplayStatics::FinishSpawningActor(chunk, transform);
+				UGameplayStatics::FinishSpawningActor(chunk, transform);
+			}
+		}
 	}
 }
 
@@ -83,6 +89,7 @@ void AChunkWorld::PrecomputeBrightness(UTexture2D* Texture)
 	int32 Width = MipMap->SizeX;
 	int32 Height = MipMap->SizeY;
 
+
 	// Loop over each pixel and compute brightness
 	for (int32 y = 0; y < Height; ++y)
 	{
@@ -98,10 +105,10 @@ void AChunkWorld::PrecomputeBrightness(UTexture2D* Texture)
 
 			// Map brightness from 0-255 to a more reasonable voxel height range (e.g., 0-128)
 			// Adjust this scale as necessary for your needs (height should be less than ChunkSize.Z)
-			float ScaledBrightness = FMath::Clamp((Brightness / 255.0f) * ChunkSize.Z, 0.0f, ChunkSize.Z);
+
 
 			// Store the brightness value
-			CachedBrightnessMap.Add(FIntPoint(x, y), ScaledBrightness);
+			CachedBrightnessMap.Add(FIntPoint(x, y), Brightness);
 		}
 	}
 
