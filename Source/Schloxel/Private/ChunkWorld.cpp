@@ -103,10 +103,6 @@ void AChunkWorld::PrecomputeBrightness(UTexture2D* Texture)
 			// Calculate brightness using the standard formula for luminance
 			float Brightness = (0.2126f * R + 0.7152f * G + 0.0722f * B);
 
-			// Map brightness from 0-255 to a more reasonable voxel height range (e.g., 0-128)
-			// Adjust this scale as necessary for your needs (height should be less than ChunkSize.Z)
-
-
 			// Store the brightness value
 			CachedBrightnessMap.Add(FIntPoint(x, y), Brightness);
 		}

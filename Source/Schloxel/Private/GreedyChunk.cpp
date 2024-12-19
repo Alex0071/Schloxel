@@ -55,7 +55,7 @@ void AGreedyChunk::GenerateBlocks()
 			const float Ypos = (y * VoxelSize + Location.Y) / VoxelSize;
 
 			// Get the height for the current voxel column
-			const float Height = GetPrecomputedPixelBrightness(x, y);
+			const float Height = GetPrecomputedPixelBrightness(Xpos, Ypos);
 
 			// Ensure that height is within the bounds of ChunkSize.Z
 			int32 HeightInt = FMath::Clamp(FMath::RoundToInt(Height), 0, ChunkSize.Z);
