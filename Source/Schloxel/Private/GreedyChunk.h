@@ -37,6 +37,8 @@ public:
 
 	FIntVector ChunkSize;
 
+	TMap<FIntPoint, int>* CachedBrightnessMap;
+
 	EBlock GetBlock(FIntVector Index) const;
 
 	bool CompareMask(FMask M1, FMask M2) const;
@@ -60,6 +62,8 @@ private:
 
 
 	void GenerateBlocks();
+
+	float GetPrecomputedPixelBrightness(int X, int Y) const;
 
 
 	void GenerateMesh();

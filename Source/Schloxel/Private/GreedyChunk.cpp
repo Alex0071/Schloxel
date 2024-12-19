@@ -3,6 +3,7 @@
 
 #include "GreedyChunk.h"
 
+#include "ChunkWorld.h"
 #include "Enums.h"
 #include "FastNoiseWrapper.h"
 #include "MeshThread.h"
@@ -33,7 +34,8 @@ void AGreedyChunk::BeginPlay()
 
 	Blocks.SetNum(ChunkSize.X * ChunkSize.Y * ChunkSize.Z);
 
-	Noise->SetupFastNoise(EFastNoise_NoiseType::Perlin, 1337, 0.003f, EFastNoise_Interp::Quintic, EFastNoise_FractalType::FBM, 3, 2, 0.2, 0.2);
+	Noise->SetupFastNoise(EFastNoise_NoiseType::Perlin, 1337, 0.003f, EFastNoise_Interp::Quintic,
+	                      EFastNoise_FractalType::FBM, 3, 2, 0.2, 0.2);
 
 
 	GenerateBlocks();
@@ -52,15 +54,20 @@ void AGreedyChunk::GenerateBlocks()
 			const float Xpos = (x * VoxelSize + Location.X) / VoxelSize;
 			const float Ypos = (y * VoxelSize + Location.Y) / VoxelSize;
 
-			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise2D(Xpos, Ypos) + 1) * ChunkSize.Z * 0.6), 0, ChunkSize.Z);
-			
-			for (int z = 0; z < Height; z++)
+			// Get the height for the current voxel column
+			const float Height = GetPrecomputedPixelBrightness(x, y);
+
+			// Ensure that height is within the bounds of ChunkSize.Z
+			int32 HeightInt = FMath::Clamp(FMath::RoundToInt(Height), 0, ChunkSize.Z);
+
+			// Fill blocks below the height with solid blocks (e.g., Stone)
+			for (int z = 0; z < HeightInt; z++)
 			{
 				Blocks[GetBlockIndex(x, y, z)] = EBlock::Stone;
 			}
 
-
-			for (int z = Height; z < ChunkSize.Z; z++)
+			// Fill the rest of the chunk with Air
+			for (int z = HeightInt; z < ChunkSize.Z; z++)
 			{
 				Blocks[GetBlockIndex(x, y, z)] = EBlock::Air;
 			}
@@ -68,54 +75,22 @@ void AGreedyChunk::GenerateBlocks()
 	}
 }
 
-float GetPixelBrightness(UTexture2D* Texture, int32 X, int32 Y, bool bUseLuminance = true)
+
+float AGreedyChunk::GetPrecomputedPixelBrightness(int X, int Y) const
 {
-	if (!Texture)
+	FIntPoint PixelCoords(X, Y);
+
+	// Attempt to find the value directly
+	if (int* Brightness = CachedBrightnessMap->Find(PixelCoords))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Texture is null!"));
-		return 0.0f;
+		return *Brightness; // Dereference and return the value
 	}
 
-	FTexture2DMipMap* Mip = &Texture->GetPlatformData()->Mips[0];
-	FColor* Pixels = static_cast<FColor*>(Mip->BulkData.Lock(LOCK_READ_ONLY));
-
-	if (!Pixels)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Could not lock texture data!"));
-		return 0.0f;
-	}
-
-	int32 Width = Mip->SizeX;
-	int32 Height = Mip->SizeY;
-
-	// Check if coordinates are within bounds
-	if (X < 0 || X >= Width || Y < 0 || Y >= Height)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Pixel coordinates out of bounds!"));
-		Mip->BulkData.Unlock();
-		return 0.0f;
-	}
-
-	FColor Pixel = Pixels[Y * Width + X];
-	Mip->BulkData.Unlock();
-
-	FLinearColor LinearColor = Pixel.ReinterpretAsLinear();
-
-	float Brightness = 0.0f;
-
-	if (bUseLuminance)
-	{
-		// Luminance calculation (more perceptually accurate)
-		Brightness = LinearColor.R * 0.2126f + LinearColor.G * 0.7152f + LinearColor.B * 0.0722f;
-	}
-	else
-	{
-		// Simple average of RGB
-		Brightness = (LinearColor.R + LinearColor.G + LinearColor.B) / 3.0f;
-	}
-
-	return FMath::Lerp(1.0f, 128.0f, Brightness); // Map 0-1 to 1-128
+	// Return a default value if the pixel is out of bounds or not found
+	UE_LOG(LogTemp, Warning, TEXT("Pixel (%d, %d) not found in CachedBrightnessMap!"), X, Y);
+	return 0.0f;
 }
+
 
 void AGreedyChunk::ApplyMesh()
 {
@@ -125,7 +100,8 @@ void AGreedyChunk::ApplyMesh()
 		if (!MeshDataQueue.IsEmpty() && MeshDataQueue.Dequeue(data))
 		{
 			Mesh->SetMaterial(0, Material);
-			Mesh->CreateMeshSection(0, data.Vertices, data.Triangles, data.Normals, data.UV0, data.Colors, TArray<FProcMeshTangent>(), true);
+			Mesh->CreateMeshSection(0, data.Vertices, data.Triangles, data.Normals, data.UV0, data.Colors,
+			                        TArray<FProcMeshTangent>(), true);
 		}
 	});
 }
@@ -139,7 +115,9 @@ void AGreedyChunk::GenerateMesh()
 
 void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 {
-	if (Position.X >= ChunkSize.X || Position.Y >= ChunkSize.Y || Position.Z >= ChunkSize.Z || Position.X < 0 || Position.Y < 0 || Position.Z < 0) return;
+	if (Position.X >= ChunkSize.X || Position.Y >= ChunkSize.Y || Position.Z >= ChunkSize.Z || Position.X < 0 ||
+		Position.Y < 0 || Position.Z < 0)
+		return;
 
 	constexpr int Radius = 8;
 
@@ -174,7 +152,8 @@ int AGreedyChunk::GetBlockIndex(int X, int Y, int Z) const
 
 EBlock AGreedyChunk::GetBlock(FIntVector Index) const
 {
-	if (Index.X >= ChunkSize.X || Index.Y >= ChunkSize.Y || Index.Z >= ChunkSize.Z || Index.X < 0 || Index.Y < 0 || Index.Z < 0)
+	if (Index.X >= ChunkSize.X || Index.Y >= ChunkSize.Y || Index.Z >= ChunkSize.Z || Index.X < 0 || Index.Y < 0 ||
+		Index.Z < 0)
 		return EBlock::Air;
 	return Blocks[GetBlockIndex(Index.X, Index.Y, Index.Z)];
 }

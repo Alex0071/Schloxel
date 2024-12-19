@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/Widget.h"
 #include "GameFramework/Actor.h"
 #include "ChunkWorld.generated.h"
 
@@ -20,6 +21,9 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	void SpawnChunks();
+	
 	UPROPERTY(EditAnywhere, Category="Chunk World")
 	TSubclassOf<AActor> Chunk;
 
@@ -35,4 +39,18 @@ private:
 
 	UPROPERTY(EditInstanceOnly, Category="Chunk World")
 	TObjectPtr<UMaterialInterface> Material;
+
+	UPROPERTY(EditInstanceOnly, Category="Chunk World")
+	TObjectPtr<UTexture2D> HeightMap;
+
+	TMap<FIntPoint, int> CachedBrightnessMap;
+
+	void PrecomputeBrightness(UTexture2D* Texture);
+
+	UTexture2D* CreateHeightmapTextureFromBrightness();
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> HeightmapWidgetClass;
+
+	void ShowHeightmap(UTexture2D* HeightmapTexture);
 };
