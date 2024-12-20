@@ -16,14 +16,15 @@ public:
 	// Sets default values for this actor's properties
 	AChunkWorld();
 
+	void ClearChunks();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:
-
 	void SpawnChunks();
-	
+
 	UPROPERTY(EditAnywhere, Category="Chunk World")
 	TSubclassOf<AActor> Chunk;
 
@@ -53,4 +54,12 @@ private:
 	TSubclassOf<UUserWidget> HeightmapWidgetClass;
 
 	void ShowHeightmap(UTexture2D* HeightmapTexture);
+
+	UPROPERTY()
+	TArray<AActor*> SpawnedChunks;
+
+#if WITH_EDITOR
+	UFUNCTION(CallInEditor, Category = "Chunk World")
+	void RegenerateChunks();
+#endif
 };

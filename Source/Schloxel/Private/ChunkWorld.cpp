@@ -15,10 +15,10 @@ AChunkWorld::AChunkWorld()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-// Called when the game starts or when spawned
-void AChunkWorld::BeginPlay()
+#if WITH_EDITOR
+void AChunkWorld::RegenerateChunks()
 {
-	Super::BeginPlay();
+	ClearChunks();
 
 	if (!HeightMap)
 	{
@@ -26,15 +26,22 @@ void AChunkWorld::BeginPlay()
 		return;
 	}
 
+	// Ensure the heightmap data is loaded
 	HeightMap->WaitForStreaming();
 
+	// Precompute brightness for the heightmap
 	PrecomputeBrightness(HeightMap);
 
-	//UTexture2D* GeneratedHeightmapTexture = CreateHeightmapTextureFromBrightness();
-	//ShowHeightmap(GeneratedHeightmapTexture);
-
-
 	SpawnChunks();
+}
+#endif
+
+// Called when the game starts or when spawned
+void AChunkWorld::BeginPlay()
+{
+	Super::BeginPlay();
+
+	RegenerateChunks();
 }
 
 void AChunkWorld::SpawnChunks()
@@ -48,30 +55,39 @@ void AChunkWorld::SpawnChunks()
 				FVector(x * ChunkSize.X * VoxelSize, y * ChunkSize.Y * VoxelSize, 0),
 				FVector::OneVector
 			);
+
+			AActor* NewChunk = nullptr;
+
 			if (Cast<AGreedyChunk>(Chunk.GetDefaultObject()))
 			{
-				const auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunk>(Chunk, transform, this);
-
+				auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunk>(Chunk, transform, this);
 				chunk->Material = Material;
 				chunk->ChunkSize = ChunkSize;
 				chunk->VoxelSize = VoxelSize;
 				chunk->CachedBrightnessMap = &CachedBrightnessMap;
 
 				UGameplayStatics::FinishSpawningActor(chunk, transform);
+				NewChunk = chunk;
 			}
-			if (Cast<AGreedyChunkSlow>(Chunk.GetDefaultObject()))
+			else if (Cast<AGreedyChunkSlow>(Chunk.GetDefaultObject()))
 			{
-				const auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunkSlow>(Chunk, transform, this);
-
+				auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunkSlow>(Chunk, transform, this);
 				chunk->Material = Material;
 				chunk->ChunkSize = ChunkSize;
 				chunk->VoxelSize = VoxelSize;
 
 				UGameplayStatics::FinishSpawningActor(chunk, transform);
+				NewChunk = chunk;
+			}
+
+			if (NewChunk)
+			{
+				SpawnedChunks.Add(NewChunk);
 			}
 		}
 	}
 }
+
 
 void AChunkWorld::PrecomputeBrightness(UTexture2D* Texture)
 {
@@ -174,4 +190,16 @@ void AChunkWorld::ShowHeightmap(UTexture2D* HeightmapTexture)
 			HeightmapWidget->AddToViewport();
 		}
 	}
+}
+
+void AChunkWorld::ClearChunks()
+{
+	for (AActor* ChildActor : SpawnedChunks)
+	{
+		if (ChildActor)
+		{
+			ChildActor->Destroy();
+		}
+	}
+	SpawnedChunks.Empty();
 }

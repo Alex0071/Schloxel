@@ -5,7 +5,6 @@
 
 #include "ChunkWorld.h"
 #include "Enums.h"
-#include "FastNoiseWrapper.h"
 #include "MeshThread.h"
 #include "Engine/Texture2D.h"
 #include "PixelFormat.h"
@@ -20,11 +19,23 @@ AGreedyChunk::AGreedyChunk()
 	PrimaryActorTick.bCanEverTick = false;
 
 	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>("Mesh");
-	Noise = CreateDefaultSubobject<UFastNoiseWrapper>("Noise");
 
 	Mesh->SetCastShadow(true);
 
 	SetRootComponent(Mesh);
+}
+
+void AGreedyChunk::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	// Ensure the Blocks array is correctly sized
+	Blocks.SetNum(ChunkSize.X * ChunkSize.Y * ChunkSize.Z);
+
+
+	// Generate blocks and mesh
+	GenerateBlocks();
+	GenerateMesh();
 }
 
 // Called when the game starts or when spawned
@@ -32,14 +43,12 @@ void AGreedyChunk::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Ensure the Blocks array is correctly sized
 	Blocks.SetNum(ChunkSize.X * ChunkSize.Y * ChunkSize.Z);
 
-	Noise->SetupFastNoise(EFastNoise_NoiseType::Perlin, 1337, 0.003f, EFastNoise_Interp::Quintic,
-	                      EFastNoise_FractalType::FBM, 3, 2, 0.2, 0.2);
-
-
+	// Generate blocks and mesh
+	ClearMesh();
 	GenerateBlocks();
-
 	GenerateMesh();
 }
 
@@ -167,9 +176,5 @@ bool AGreedyChunk::CompareMask(FMask M1, FMask M2) const
 
 void AGreedyChunk::ClearMesh()
 {
-	TQueue<FChunkMeshData>::FElementType data;
-	if (!MeshDataQueue.IsEmpty() && MeshDataQueue.Dequeue(data))
-	{
-		data.Clear();
-	}
+	MeshDataQueue.Empty();
 }

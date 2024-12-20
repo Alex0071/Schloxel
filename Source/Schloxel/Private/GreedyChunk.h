@@ -10,7 +10,6 @@
 #include "GreedyChunk.generated.h"
 
 class AMeshThread;
-class UFastNoiseWrapper;
 class UProceduralMeshComponent;
 
 UCLASS()
@@ -26,6 +25,7 @@ public:
 	};
 
 	AGreedyChunk();
+	void OnConstruction(const FTransform& Transform);
 
 	UFUNCTION(BlueprintCallable, Category="Chunk")
 	void ModifyVoxel(const FIntVector Position, const EBlock Block);
@@ -56,7 +56,6 @@ protected:
 
 private:
 	TObjectPtr<UProceduralMeshComponent> Mesh;
-	TObjectPtr<UFastNoiseWrapper> Noise;
 
 	TArray<EBlock> Blocks;
 

@@ -200,4 +200,5 @@ void AMeshThread::CreateQuad(AGreedyChunk::FMask Mask, FIntVector AxisMask, int 
 void AMeshThread::Exit()
 {
 	GreedyChunk->ApplyMesh();
+	delete this;
 }
