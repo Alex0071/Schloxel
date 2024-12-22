@@ -1,52 +1,48 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GreedyChunk.h"
-
 #include "ChunkWorld.h"
 #include "Enums.h"
 #include "MeshThread.h"
 #include "Engine/Texture2D.h"
 #include "PixelFormat.h"
 #include "Math/UnrealMathUtility.h"
-
-#include "ProceduralMeshComponent.h"
+#include "RealtimeMeshComponent.h"
+#include "RealtimeMeshSimple.h"
 
 // Sets default values
 AGreedyChunk::AGreedyChunk()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>("Mesh");
-
-	Mesh->SetCastShadow(true);
-
+	Mesh = CreateDefaultSubobject<URealtimeMeshComponent>("Mesh");
 	SetRootComponent(Mesh);
+	Mesh->SetCastShadow(true);
+	Mesh->SetMobility(EComponentMobility::Movable);
+	// Enable collision for the mesh section
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Mesh->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
+	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+
+	// Ensure the mesh component is set to receive dynamic lighting
+	Mesh->bAffectDynamicIndirectLighting = true;
+	Mesh->bAffectDistanceFieldLighting = true;
 }
 
 void AGreedyChunk::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	// Ensure the Blocks array is correctly sized
 	Blocks.SetNum(ChunkSize.X * ChunkSize.Y * ChunkSize.Z);
 
-
-	// Generate blocks and mesh
 	GenerateBlocks();
 	GenerateMesh();
 }
 
-// Called when the game starts or when spawned
 void AGreedyChunk::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Ensure the Blocks array is correctly sized
 	Blocks.SetNum(ChunkSize.X * ChunkSize.Y * ChunkSize.Z);
 
-	// Generate blocks and mesh
 	ClearMesh();
 	GenerateBlocks();
 	GenerateMesh();
@@ -63,20 +59,15 @@ void AGreedyChunk::GenerateBlocks()
 			const float Xpos = (x * VoxelSize + Location.X) / VoxelSize;
 			const float Ypos = (y * VoxelSize + Location.Y) / VoxelSize;
 
-			// Get the height for the current voxel column
 			const float Height = GetPrecomputedPixelBrightness(Xpos, Ypos);
 
-			// Ensure that height is within the bounds of ChunkSize.Z
 			int32 HeightInt = FMath::Clamp(FMath::RoundToInt(Height), 0, ChunkSize.Z);
 
-
-			// Fill blocks below the height with solid blocks (e.g., Stone)
 			for (int z = 0; z < HeightInt; z++)
 			{
 				Blocks[GetBlockIndex(x, y, z)] = EBlock::Stone;
 			}
 
-			// Fill the rest of the chunk with Air
 			for (int z = HeightInt; z < ChunkSize.Z; z++)
 			{
 				Blocks[GetBlockIndex(x, y, z)] = EBlock::Air;
@@ -85,43 +76,69 @@ void AGreedyChunk::GenerateBlocks()
 	}
 }
 
-
 float AGreedyChunk::GetPrecomputedPixelBrightness(int X, int Y) const
 {
 	FIntPoint PixelCoords(X, Y);
 
-	// Attempt to find the value directly
 	if (int* Brightness = CachedBrightnessMap->Find(PixelCoords))
 	{
-		return *Brightness; // Dereference and return the value
+		return *Brightness;
 	}
 
-	// Return a default value if the pixel is out of bounds or not found
 	UE_LOG(LogTemp, Warning, TEXT("Pixel (%d, %d) not found in CachedBrightnessMap!"), X, Y);
 	return 0.0f;
 }
-
 
 void AGreedyChunk::ApplyMesh()
 {
 	AsyncTask(ENamedThreads::GameThread, [this]()
 	{
-		TQueue<FChunkMeshData>::FElementType data;
-		if (!MeshDataQueue.IsEmpty() && MeshDataQueue.Dequeue(data))
+		while (!MeshDataQueue.IsEmpty())
 		{
-			Mesh->SetMaterial(0, Material);
-			Mesh->CreateMeshSection(0, data.Vertices, data.Triangles, data.Normals, data.UV0, data.Colors,
-			                        TArray<FProcMeshTangent>(), true);
+			TQueue<FChunkMeshData>::FElementType data;
+			if (MeshDataQueue.Dequeue(data))
+			{
+				URealtimeMeshSimple* RealtimeMesh = Mesh->InitializeRealtimeMesh<URealtimeMeshSimple>();
+
+				FRealtimeMeshStreamSet StreamSet;
+				TRealtimeMeshBuilderLocal<uint16, FPackedNormal, FVector2DHalf, 1> Builder(StreamSet);
+
+				Builder.EnableTangents();
+				Builder.EnableTexCoords();
+				Builder.EnableColors();
+				Builder.EnablePolyGroups();
+
+				for (int32 i = 0; i < data.Vertices.Num(); ++i)
+				{
+					int32 VertexIndex = Builder.AddVertex(FVector3f(data.Vertices[i]))
+					                           .SetNormalAndTangent(FVector3f(data.Normals[i]),
+					                                                FVector3f(0, 0, 0))
+					                           .SetTexCoord(FVector2f(data.UV0[i]));
+				}
+
+				for (int32 i = 0; i < data.Triangles.Num(); i += 3)
+				{
+					Builder.AddTriangle(data.Triangles[i], data.Triangles[i + 1], data.Triangles[i + 2], 0);
+				}
+
+				RealtimeMesh->SetupMaterialSlot(0, "PrimaryMaterial", Material);
+
+				const FRealtimeMeshSectionGroupKey GroupKey = FRealtimeMeshSectionGroupKey::Create(
+					0, FName("ChunkMesh"));
+				const FRealtimeMeshSectionKey SectionKey = FRealtimeMeshSectionKey::CreateForPolyGroup(GroupKey, 0);
+
+				RealtimeMesh->CreateSectionGroup(GroupKey, StreamSet,
+				                                 FRealtimeMeshSectionGroupConfig(ERealtimeMeshSectionDrawType::Static));
+				RealtimeMesh->UpdateSectionConfig(SectionKey, FRealtimeMeshSectionConfig(0), true);
+			}
 		}
 	});
 }
-
 
 void AGreedyChunk::GenerateMesh()
 {
 	MeshThread = new AMeshThread(this);
 }
-
 
 void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 {
@@ -131,7 +148,6 @@ void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 
 	constexpr int Radius = 8;
 
-	// Iterate through all positions within a limited range
 	for (int x = -Radius + 1; x <= Radius - 1; ++x)
 	{
 		for (int y = -Radius + 1; y <= Radius - 1; ++y)
@@ -149,9 +165,7 @@ void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 	}
 
 	ClearMesh();
-
 	GenerateMesh();
-
 	ApplyMesh();
 }
 
@@ -172,7 +186,6 @@ bool AGreedyChunk::CompareMask(FMask M1, FMask M2) const
 {
 	return M1.Block == M2.Block && M1.Normal == M2.Normal;
 }
-
 
 void AGreedyChunk::ClearMesh()
 {

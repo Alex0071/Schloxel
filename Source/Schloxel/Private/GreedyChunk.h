@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "ChunkMeshData.h"
 #include "Enums.h"
+#include "RealtimeMeshComponent.h"
 #include "GreedyChunk.generated.h"
 
 class AMeshThread;
@@ -55,7 +56,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	TObjectPtr<UProceduralMeshComponent> Mesh;
+	UPROPERTY()
+	TObjectPtr<URealtimeMeshComponent> Mesh;
 
 	TArray<EBlock> Blocks;
 
