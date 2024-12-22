@@ -16,15 +16,12 @@ AGreedyChunk::AGreedyChunk()
 	Mesh = CreateDefaultSubobject<URealtimeMeshComponent>("Mesh");
 	SetRootComponent(Mesh);
 	Mesh->SetCastShadow(true);
-	Mesh->SetMobility(EComponentMobility::Movable);
+	Mesh->SetMobility(EComponentMobility::Static);
+
 	// Enable collision for the mesh section
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	Mesh->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-
-	// Ensure the mesh component is set to receive dynamic lighting
-	Mesh->bAffectDynamicIndirectLighting = true;
-	Mesh->bAffectDistanceFieldLighting = true;
 }
 
 void AGreedyChunk::OnConstruction(const FTransform& Transform)

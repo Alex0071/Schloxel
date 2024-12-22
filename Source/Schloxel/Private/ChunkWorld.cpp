@@ -4,7 +4,6 @@
 #include "ChunkWorld.h"
 
 #include "GreedyChunk.h"
-#include "GreedyChunkSlow.h"
 #include "MyUserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -58,27 +57,14 @@ void AChunkWorld::SpawnChunks()
 
 			AActor* NewChunk = nullptr;
 
-			if (Cast<AGreedyChunk>(Chunk.GetDefaultObject()))
-			{
-				auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunk>(Chunk, transform, this);
-				chunk->Material = Material;
-				chunk->ChunkSize = ChunkSize;
-				chunk->VoxelSize = VoxelSize;
-				chunk->CachedBrightnessMap = &CachedBrightnessMap;
+			auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunk>(AGreedyChunk::StaticClass(), transform, this);
+			chunk->Material = Material;
+			chunk->ChunkSize = ChunkSize;
+			chunk->VoxelSize = VoxelSize;
+			chunk->CachedBrightnessMap = &CachedBrightnessMap;
 
-				UGameplayStatics::FinishSpawningActor(chunk, transform);
-				NewChunk = chunk;
-			}
-			else if (Cast<AGreedyChunkSlow>(Chunk.GetDefaultObject()))
-			{
-				auto chunk = GetWorld()->SpawnActorDeferred<AGreedyChunkSlow>(Chunk, transform, this);
-				chunk->Material = Material;
-				chunk->ChunkSize = ChunkSize;
-				chunk->VoxelSize = VoxelSize;
-
-				UGameplayStatics::FinishSpawningActor(chunk, transform);
-				NewChunk = chunk;
-			}
+			UGameplayStatics::FinishSpawningActor(chunk, transform);
+			NewChunk = chunk;
 
 			if (NewChunk)
 			{

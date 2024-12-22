@@ -26,9 +26,6 @@ private:
 	void SpawnChunks();
 
 	UPROPERTY(EditAnywhere, Category="Chunk World")
-	TSubclassOf<AActor> Chunk;
-
-	UPROPERTY(EditAnywhere, Category="Chunk World")
 	int DrawDistance = 5;
 
 	UPROPERTY(EditAnywhere, Category="Chunk World")
