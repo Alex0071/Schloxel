@@ -16,6 +16,20 @@ public:
 	AVoxModel();
 	void OnConstruction(const FTransform& Transform) override;
 
+	UFUNCTION(BlueprintCallable, Category="Vox Model")
+	void ModifyVoxel(const FIntVector Position, const EBlock Block);
+
+	FIntVector WorldToModelPosition(const FVector& WorldPosition) const
+	{
+		FVector LocalPosition = WorldPosition - GetActorLocation();
+		return FIntVector(
+			(LocalPosition.X / VoxelScale),
+			(LocalPosition.Y / VoxelScale),
+			(LocalPosition.Z / VoxelScale)
+		);
+	}
+
+
 	UPROPERTY(EditAnywhere, Category="Vox Model")
 	FString VoxFilePath;
 
@@ -28,6 +42,13 @@ public:
 	UPROPERTY(EditAnywhere, Category="Vox Model")
 	TObjectPtr<UMaterialInterface> Material;
 
+	FIntVector ModelDimensions;
+
+protected:
+	virtual void BeginPlay() override;
+
 private:
-	void BuildGreedyMesh(const TArray<EBlock>& Blocks, const FIntVector& Dimensions);
+	TArray<EBlock> Blocks;
+	void BuildGreedyMesh(const TArray<EBlock>& InBlocks, const FIntVector& Dimensions);
+	void LoadVoxModel();
 };
