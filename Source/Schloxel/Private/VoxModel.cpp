@@ -17,8 +17,8 @@ AVoxModel::AVoxModel()
 void AVoxModel::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
-	// ClearMeshData();
-	// LoadVoxModel();
+	ClearMeshData();
+	LoadVoxModel();
 }
 
 void AVoxModel::BeginPlay()

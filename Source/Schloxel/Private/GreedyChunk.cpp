@@ -30,6 +30,7 @@ void AGreedyChunk::OnConstruction(const FTransform& Transform)
 
 	Blocks.SetNum(ChunkSize.X * ChunkSize.Y * ChunkSize.Z);
 
+	ClearMesh();
 	GenerateBlocks();
 	GenerateMesh();
 }
@@ -161,9 +162,7 @@ void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 		}
 	}
 
-	ClearMesh();
 	GenerateMesh();
-	ApplyMesh();
 }
 
 int AGreedyChunk::GetBlockIndex(int X, int Y, int Z) const
