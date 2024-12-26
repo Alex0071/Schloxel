@@ -5,6 +5,7 @@
 #include "ProceduralMeshComponent.h"
 #include "PackedNormal.h"
 #include "Enums.h"
+#include "VoxMeshData.h"
 #include "VoxModel.generated.h"
 
 UCLASS(MinimalAPI)
@@ -14,7 +15,7 @@ class AVoxModel : public AActor
 
 public:
 	AVoxModel();
-	void OnConstruction(const FTransform& Transform) override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	UFUNCTION(BlueprintCallable, Category="Vox Model")
 	void ModifyVoxel(const FIntVector Position, const EBlock Block);
@@ -22,10 +23,14 @@ public:
 	FIntVector WorldToModelPosition(const FVector& WorldPosition) const
 	{
 		FVector LocalPosition = WorldPosition - GetActorLocation();
+		// Add back half dimensions on X and Y since model is centered on those axes
+		LocalPosition.X += (ModelDimensions.X * VoxelSize * 0.5f);
+		LocalPosition.Y += (ModelDimensions.Y * VoxelSize * 0.5f);
+		// Z stays as is since pivot is at bottom
 		return FIntVector(
-			(LocalPosition.X / VoxelScale),
-			(LocalPosition.Y / VoxelScale),
-			(LocalPosition.Z / VoxelScale)
+			(LocalPosition.X / VoxelSize),
+			(LocalPosition.Y / VoxelSize),
+			(LocalPosition.Z / VoxelSize)
 		);
 	}
 
@@ -34,7 +39,7 @@ public:
 	FString VoxFilePath;
 
 	UPROPERTY(EditAnywhere, Category="Vox Model")
-	float VoxelScale = 100.0f;
+	float VoxelSize = 10.0f;
 
 	UPROPERTY()
 	TObjectPtr<UProceduralMeshComponent> MeshComponent;
@@ -44,11 +49,17 @@ public:
 
 	FIntVector ModelDimensions;
 
+	TQueue<FVoxMeshData> MeshDataQueue;
+
+	TArray<EBlock> Blocks;
+
+	void ApplyMesh();
+
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	TArray<EBlock> Blocks;
-	void BuildGreedyMesh(const TArray<EBlock>& InBlocks, const FIntVector& Dimensions);
+	void GenerateMesh();
 	void LoadVoxModel();
+	void ClearMeshData();
 };

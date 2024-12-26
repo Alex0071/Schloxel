@@ -12,7 +12,7 @@ AMeshThread::AMeshThread(AGreedyChunk* greedyChunk)
 
 bool AMeshThread::Init()
 {
-	UE_LOG(LogTemp, Warning, TEXT("My custom thread has been initialized"));
+	UE_LOG(LogTemp, Warning, TEXT("A Chunk Mesh Thread has been initialized"));
 
 	return true;
 }
@@ -200,5 +200,5 @@ void AMeshThread::CreateQuad(AGreedyChunk::FMask Mask, FIntVector AxisMask, int 
 void AMeshThread::Exit()
 {
 	GreedyChunk->ApplyMesh();
-	delete this;
+	FRunnable::Exit();
 }
