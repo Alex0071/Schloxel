@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2024 TriAxis Games, L.L.C. All Rights Reserved.
+// Copyright (c) 2015-2025 TriAxis Games, L.L.C. All Rights Reserved.
 
 #pragma once
 
@@ -68,12 +68,12 @@ namespace RealtimeMesh
 		TArray<FRealtimeMeshSectionGroupProxyRef> SectionGroups;
 		TMap<FRealtimeMeshSectionGroupKey, uint32> SectionGroupMap;
 		FRealtimeMeshSectionGroupMask ActiveSectionGroupMask;
-		TOptional<FRealtimeMeshSectionGroupKey> OverrideStaticRayTracingGroup;
 
 		FRealtimeMeshLODConfig Config;
 		FRealtimeMeshDrawMask DrawMask;
+		
 #if RHI_RAYTRACING
-		FRealtimeMeshSectionGroupProxyPtr StaticRaytracingSectionGroup;
+		int32 StaticRayTraceSectionGroup;
 #endif
 		
 
@@ -86,8 +86,6 @@ namespace RealtimeMesh
 		FRealtimeMeshDrawMask GetDrawMask() const { return DrawMask; }
 		FRealtimeMeshActiveSectionGroupIterator GetActiveSectionGroupMaskIter() const { return FRealtimeMeshActiveSectionGroupIterator(*this, ActiveSectionGroupMask); }
 		float GetScreenSize() const { return Config.ScreenSize; }
-
-		FRealtimeMeshSectionGroupProxyPtr GetStaticRayTracedSectionGroup() const { return StaticRaytracingSectionGroup; }
 
 		FRealtimeMeshSectionGroupProxyPtr GetSectionGroup(const FRealtimeMeshSectionGroupKey& SectionGroupKey) const;
 

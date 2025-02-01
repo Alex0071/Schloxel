@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2024 TriAxis Games, L.L.C. All Rights Reserved.
+// Copyright (c) 2015-2025 TriAxis Games, L.L.C. All Rights Reserved.
 
 #pragma once
 
@@ -113,7 +113,7 @@ namespace RealtimeMesh
 		virtual void Reset();
 
 	protected:
-		virtual void UpdateRayTracingInfo(FRHICommandListBase& RHICmdList);
+		virtual bool UpdateRayTracingInfo(FRHICommandListBase& RHICmdList);
 
 		void RebuildSectionMap();
 

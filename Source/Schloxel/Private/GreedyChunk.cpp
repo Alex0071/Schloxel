@@ -98,8 +98,8 @@ void AGreedyChunk::ApplyMesh()
 			{
 				URealtimeMeshSimple* RealtimeMesh = Mesh->InitializeRealtimeMesh<URealtimeMeshSimple>();
 
-				FRealtimeMeshStreamSet StreamSet;
-				TRealtimeMeshBuilderLocal<uint16, FPackedNormal, FVector2DHalf, 1> Builder(StreamSet);
+				RealtimeMesh::FRealtimeMeshStreamSet StreamSet;
+				RealtimeMesh::TRealtimeMeshBuilderLocal<uint16, FPackedNormal, FVector2DHalf, 1> Builder(StreamSet);
 
 				Builder.EnableTangents();
 				Builder.EnableTexCoords();
