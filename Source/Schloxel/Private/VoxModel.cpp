@@ -3,15 +3,21 @@
 #include "AVoxMeshThread.h"
 #include "VoxImporter.h"
 #include "ProceduralMeshComponent.h"
+#include "RealtimeMeshSimple.h"
 
 AVoxModel::AVoxModel()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	MeshComponent = CreateDefaultSubobject<UProceduralMeshComponent>("VoxMesh");
+	MeshComponent = CreateDefaultSubobject<URealtimeMeshComponent>("VoxMesh");
 	SetRootComponent(MeshComponent);
 	MeshComponent->SetCastShadow(true);
 	MeshComponent->SetMobility(EComponentMobility::Static);
+
+	// Enable collision for the mesh section
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	MeshComponent->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
+	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 }
 
 void AVoxModel::OnConstruction(const FTransform& Transform)
@@ -91,9 +97,38 @@ void AVoxModel::ApplyMesh()
 			TQueue<FVoxMeshData>::FElementType data;
 			if (MeshDataQueue.Dequeue(data))
 			{
-				MeshComponent->CreateMeshSection(0, data.Vertices, data.Triangles, data.Normals, data.UV0,
-				                                 TArray<FColor>(), TArray<FProcMeshTangent>(), true);
-				MeshComponent->SetMaterial(0, Material);
+				URealtimeMeshSimple* RealtimeMesh = MeshComponent->InitializeRealtimeMesh<URealtimeMeshSimple>();
+
+				RealtimeMesh::FRealtimeMeshStreamSet StreamSet;
+				RealtimeMesh::TRealtimeMeshBuilderLocal<uint32, FPackedNormal, FVector2DHalf, 1> Builder(StreamSet);
+
+				Builder.EnableTangents();
+				Builder.EnableTexCoords();
+				Builder.EnableColors();
+				Builder.EnablePolyGroups();
+
+				for (int i = 0; i < data.Vertices.Num(); i++)
+				{
+					int32 VertexIndex = Builder.AddVertex(FVector3f(data.Vertices[i]))
+					                           .SetNormalAndTangent(FVector3f(data.Normals[i]),
+					                                                FVector3f(0, 0, 0))
+					                           .SetTexCoord(FVector2f(data.UV0[i]));
+				}
+
+				for (int32 i = 0; i < data.Triangles.Num(); i += 3)
+				{
+					Builder.AddTriangle(data.Triangles[i], data.Triangles[i + 1], data.Triangles[i + 2], 0);
+				}
+
+				RealtimeMesh->SetupMaterialSlot(0, "PrimaryMaterial", Material);
+
+				const FRealtimeMeshSectionGroupKey GroupKey = FRealtimeMeshSectionGroupKey::Create(
+					0, FName("VoxMesh"));
+				const FRealtimeMeshSectionKey SectionKey = FRealtimeMeshSectionKey::CreateForPolyGroup(GroupKey, 0);
+
+				RealtimeMesh->CreateSectionGroup(GroupKey, StreamSet,
+												 FRealtimeMeshSectionGroupConfig(ERealtimeMeshSectionDrawType::Static));
+				RealtimeMesh->UpdateSectionConfig(SectionKey, FRealtimeMeshSectionConfig(0), true);
 			}
 		}
 	});
@@ -104,6 +139,6 @@ void AVoxModel::ClearMeshData()
 {
 	Blocks.Empty();
 	ModelDimensions = FIntVector::ZeroValue;
-	
+
 	MeshDataQueue.Empty();
 }

@@ -375,7 +375,7 @@ void AVoxMeshThread::VisualizeChunks()
             (ChunkMax - ChunkMin) * 0.5f, // Box extent
             FQuat::Identity,
             ChunkColor,
-            true,  // Persistent
+            false,  // Persistent
             5.0f,  // Duration
             0,     // DepthPriority
             2.0f   // Thickness

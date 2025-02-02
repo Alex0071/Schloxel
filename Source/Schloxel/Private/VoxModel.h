@@ -5,6 +5,7 @@
 #include "ProceduralMeshComponent.h"
 #include "PackedNormal.h"
 #include "Enums.h"
+#include "RealtimeMeshComponent.h"
 #include "VoxMeshData.h"
 #include "VoxModel.generated.h"
 
@@ -42,7 +43,7 @@ public:
 	float VoxelSize = 10.0f;
 
 	UPROPERTY()
-	TObjectPtr<UProceduralMeshComponent> MeshComponent;
+	TObjectPtr<URealtimeMeshComponent> MeshComponent;
 
 	UPROPERTY(EditAnywhere, Category="Vox Model")
 	TObjectPtr<UMaterialInterface> Material;
