@@ -187,5 +187,7 @@ void AChunkWorld::ClearChunks()
 			ChildActor->Destroy();
 		}
 	}
+
+	CachedBrightnessMap.Empty();
 	SpawnedChunks.Empty();
 }
