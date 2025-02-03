@@ -44,7 +44,7 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 	// Set final dimensions
 	ModelDimensions = MaxBounds - MinBounds;
 	const int32 TotalVoxels = ModelDimensions.X * ModelDimensions.Y * ModelDimensions.Z;
-	VoxelData.SetNum(TotalVoxels, false);
+	VoxelData.SetNum(TotalVoxels, EAllowShrinking::No);
 
 	// Initialize all to Air
 	for (int32 i = 0; i < TotalVoxels; i++)
