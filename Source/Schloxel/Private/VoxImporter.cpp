@@ -19,11 +19,32 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 		return false;
 	}
 
-	const ogt_vox_model* Model = Scene->models[0];
-	ModelDimensions = FIntVector(Model->size_x, Model->size_y, Model->size_z);
+	// First calculate the total bounds needed
+	FIntVector MinBounds(MAX_int32, MAX_int32, MAX_int32);
+	FIntVector MaxBounds(MIN_int32, MIN_int32, MIN_int32);
 
+	for (uint32 i = 0; i < Scene->num_instances; i++)
+	{
+		const ogt_vox_instance& Instance = Scene->instances[i];
+		const ogt_vox_model* Model = Scene->models[Instance.model_index];
+
+		// Get instance transform
+		FVector Position(Instance.transform.m30, Instance.transform.m31, Instance.transform.m32);
+
+		// Update bounds
+		MinBounds.X = FMath::Min(MinBounds.X, FMath::FloorToInt(Position.X));
+		MinBounds.Y = FMath::Min(MinBounds.Y, FMath::FloorToInt(Position.Y));
+		MinBounds.Z = FMath::Min(MinBounds.Z, FMath::FloorToInt(Position.Z));
+
+		MaxBounds.X = FMath::Max(MaxBounds.X, FMath::CeilToInt(Position.X + Model->size_x));
+		MaxBounds.Y = FMath::Max(MaxBounds.Y, FMath::CeilToInt(Position.Y + Model->size_y));
+		MaxBounds.Z = FMath::Max(MaxBounds.Z, FMath::CeilToInt(Position.Z + Model->size_z));
+	}
+
+	// Set final dimensions
+	ModelDimensions = MaxBounds - MinBounds;
 	const int32 TotalVoxels = ModelDimensions.X * ModelDimensions.Y * ModelDimensions.Z;
-	VoxelData.SetNum(TotalVoxels, EAllowShrinking::No);
+	VoxelData.SetNum(TotalVoxels, false);
 
 	// Initialize all to Air
 	for (int32 i = 0; i < TotalVoxels; i++)
@@ -31,20 +52,52 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 		VoxelData[i] = EBlock::Air;
 	}
 
-	// Fill in the solid voxels
-	const uint8_t* VoxelPtr = Model->voxel_data;
-	for (uint32 z = 0; z < static_cast<uint32>(Model->size_z); z++)
+	// Add each instance to the combined volume
+	for (uint32 i = 0; i < Scene->num_instances; i++)
 	{
-		for (uint32 y = 0; y < static_cast<uint32>(Model->size_y); y++)
+		const ogt_vox_instance& Instance = Scene->instances[i];
+		const ogt_vox_model* Model = Scene->models[Instance.model_index];
+
+		// Extract rotation matrix
+		FMatrix RotationMatrix(
+			FVector(Instance.transform.m00, Instance.transform.m01, Instance.transform.m02),
+			FVector(Instance.transform.m10, Instance.transform.m11, Instance.transform.m12),
+			FVector(Instance.transform.m20, Instance.transform.m21, Instance.transform.m22),
+			FVector::ZeroVector
+		);
+
+		FVector Position(Instance.transform.m30, Instance.transform.m31, Instance.transform.m32);
+		Position -= FVector(MinBounds); // Offset by MinBounds to start at 0,0,0
+
+		// Copy voxels into combined volume
+		for (uint32 z = 0; z < Model->size_z; z++)
 		{
-			for (uint32 x = 0; x < static_cast<uint32>(Model->size_x); x++)
+			for (uint32 y = 0; y < Model->size_y; y++)
 			{
-				if (*VoxelPtr != 0)
+				for (uint32 x = 0; x < Model->size_x; x++)
 				{
-					const int32 Index = x + y * ModelDimensions.X + z * ModelDimensions.X * ModelDimensions.Y;
-					VoxelData[Index] = EBlock::Stone;
+					const uint8_t VoxelValue = Model->voxel_data[x + y * Model->size_x + z * Model->size_x * Model->
+						size_y];
+					if (VoxelValue != 0)
+					{
+						// Apply rotation to the local position
+						FVector LocalPos(x, y, z);
+						FVector RotatedPos = RotationMatrix.TransformVector(LocalPos);
+
+						const int32 DestX = FMath::FloorToInt(Position.X + RotatedPos.X);
+						const int32 DestY = FMath::FloorToInt(Position.Y + RotatedPos.Y);
+						const int32 DestZ = FMath::FloorToInt(Position.Z + RotatedPos.Z);
+
+						if (DestX >= 0 && DestX < ModelDimensions.X &&
+							DestY >= 0 && DestY < ModelDimensions.Y &&
+							DestZ >= 0 && DestZ < ModelDimensions.Z)
+						{
+							const int32 Index = DestX + DestY * ModelDimensions.X + DestZ * ModelDimensions.X *
+								ModelDimensions.Y;
+							VoxelData[Index] = EBlock::Stone;
+						}
+					}
 				}
-				VoxelPtr++;
 			}
 		}
 	}
@@ -52,6 +105,7 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 	ogt_vox_destroy_scene(Scene);
 	return true;
 }
+
 
 TArray<EBlock> UVoxImporter::GetVoxelData() const
 {
