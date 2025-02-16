@@ -2,7 +2,6 @@
 
 #include "AVoxMeshThread.h"
 #include "VoxImporter.h"
-#include "ProceduralMeshComponent.h"
 #include "RealtimeMeshSimple.h"
 
 AVoxModel::AVoxModel()

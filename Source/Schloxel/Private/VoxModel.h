@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ProceduralMeshComponent.h"
 #include "PackedNormal.h"
 #include "Enums.h"
 #include "RealtimeMeshComponent.h"
