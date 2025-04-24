@@ -1,5 +1,6 @@
 # Schloxel
-Multithreaded Procedural Generation of Voxels via Heightmap input,
+Multithreaded Procedural Generation of Voxels via a Heightmap,
+
 .vox file importer and modification of voxels.
 
 
