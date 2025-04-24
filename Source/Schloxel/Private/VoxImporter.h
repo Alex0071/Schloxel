@@ -13,8 +13,7 @@ public:
 	bool LoadVoxFile(const FString& FilePath);
 	TArray<EBlock> GetVoxelData() const;
 	FIntVector GetModelSize() const;
-
-	// Add array to store multiple models' data
+	
 	TArray<TArray<EBlock>> VoxelDataArray;
 	TArray<FIntVector> ModelDimensionsArray;
 

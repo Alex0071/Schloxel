@@ -26,7 +26,7 @@ FIntVector UVoxelFunctionLibrary::WorldToChunkPosition(const FVector& Position, 
 {
 	FIntVector Result;
 
-	const FIntVector Factor = Size * 10; // 10 is the voxel size
+	const FIntVector Factor = Size * 10; 
 	const auto IntPosition = FIntVector(Position);
 
 	if (IntPosition.X < 0) Result.X = static_cast<int>(Position.X / Factor.X) - 1;

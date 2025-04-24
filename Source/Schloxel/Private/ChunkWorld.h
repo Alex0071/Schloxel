@@ -13,13 +13,11 @@ class AChunkWorld : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AChunkWorld();
 
 	void ClearChunks();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:

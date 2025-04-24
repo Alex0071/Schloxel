@@ -135,15 +135,15 @@ UTexture2D* AChunkWorld::CreateHeightmapTextureFromBrightness()
 			FIntPoint PixelCoords(x, y);
 			float Brightness = CachedBrightnessMap[PixelCoords];
 
-			// Convert brightness to color (e.g., grayscale)
+
 			uint8 BrightnessValue = FMath::RoundToInt(Brightness);
 
-			// Write the color to the texture (RGBA format)
-			int32 PixelIndex = (y * Width + x) * 4; // RGBA
-			Data[PixelIndex + 0] = BrightnessValue; // Red
-			Data[PixelIndex + 1] = BrightnessValue; // Green
-			Data[PixelIndex + 2] = BrightnessValue; // Blue
-			Data[PixelIndex + 3] = 255; // Alpha
+		
+			int32 PixelIndex = (y * Width + x) * 4; 
+			Data[PixelIndex + 0] = BrightnessValue; 
+			Data[PixelIndex + 1] = BrightnessValue; 
+			Data[PixelIndex + 2] = BrightnessValue; 
+			Data[PixelIndex + 3] = 255; 
 		}
 	}
 
@@ -161,18 +161,15 @@ void AChunkWorld::ShowHeightmap(UTexture2D* HeightmapTexture)
 	if (!HeightmapTexture)
 		return;
 
-	// Ensure the Widget Class is set in the editor or code
+
 	if (HeightmapWidgetClass)
 	{
-		// Create the widget
 		UMyUserWidget* HeightmapWidget = CreateWidget<UMyUserWidget>(GetWorld(), HeightmapWidgetClass);
 
 		if (HeightmapWidget)
 		{
-			// Set the heightmap texture
 			HeightmapWidget->textureMap = HeightmapTexture;
-
-			// Add the widget to the viewport
+			
 			HeightmapWidget->AddToViewport();
 		}
 	}

@@ -156,7 +156,8 @@ void AGreedyChunk::ModifyVoxel(const FIntVector Position, const EBlock Block)
 				if (distance <= Radius)
 				{
 					const int index = GetBlockIndex(Position.X + x, Position.Y + y, Position.Z + z);
-					Blocks[index] = Block;
+					if (index >= 0 && index < Blocks.Num())
+						Blocks[index] = Block;
 				}
 			}
 		}

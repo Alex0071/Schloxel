@@ -4,26 +4,83 @@
 
 #include "GreedyChunk.h"
 #include "VoxelFunctionLibrary.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 #include "VoxModel.h"
+
+AMyPlayerController::AMyPlayerController()
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
 
 void AMyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Enable mouse input
+
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
 
-	// Lock mouse to game viewport
+
 	FInputModeGameOnly InputMode;
 	SetInputMode(InputMode);
 	bShowMouseCursor = false;
 
-	// Setup input mapping
 	InputComponent->BindAction("RightMouseButton", IE_Pressed, this, &AMyPlayerController::OnRightMouseButtonPressed);
+	InputComponent->BindAction("LeftMouseButton", IE_Pressed, this, &AMyPlayerController::OnLeftMouseButtonPressed);
+}
+
+void AMyPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void AMyPlayerController::OnRightMouseButtonPressed()
+{
+	FHitResult HitResult;
+	const FVector StartTrace = PlayerCameraManager->GetCameraLocation();
+	const FRotator CameraRotation = PlayerCameraManager->GetCameraRotation();
+	const FVector EndTrace = StartTrace + (CameraRotation.Vector() * 10000.0f);
+
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECC_Visibility))
+	{
+		UNiagaraSystem* NiagaraSystemAsset = nullptr;
+		if (AGreedyChunk* Chunk = Cast<AGreedyChunk>(HitResult.GetActor()))
+		{
+			Chunk->ModifyVoxel(
+				UVoxelFunctionLibrary::WorldToLocalBlockPosition(HitResult.Location - HitResult.Normal,
+				                                                 Chunk->ChunkSize), EBlock::Air);
+
+			NiagaraSystemAsset = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/FX/Niagara.Niagara"));
+		}
+
+
+		if (AVoxModel* VoxModel = Cast<AVoxModel>(HitResult.GetActor()))
+		{
+			VoxModel->ModifyVoxel(
+				VoxModel->WorldToModelPosition(HitResult.Location - HitResult.Normal),
+				EBlock::Air);
+
+			NiagaraSystemAsset = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/FX/Niagara2.Niagara2"));
+		}
+
+		if (NiagaraSystemAsset)
+		{
+			FVector _spwnLoc = HitResult.Location;
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				GetWorld(),
+				NiagaraSystemAsset,
+				_spwnLoc,
+				SpawnRotation
+			);
+		}
+	}
+}
+
+void AMyPlayerController::OnLeftMouseButtonPressed()
 {
 	FHitResult HitResult;
 	const FVector StartTrace = PlayerCameraManager->GetCameraLocation();
@@ -36,14 +93,14 @@ void AMyPlayerController::OnRightMouseButtonPressed()
 		{
 			Chunk->ModifyVoxel(
 				UVoxelFunctionLibrary::WorldToLocalBlockPosition(HitResult.Location - HitResult.Normal,
-				                                                 Chunk->ChunkSize), EBlock::Air);
+				                                                 Chunk->ChunkSize), EBlock::Stone);
 		}
 
 		if (AVoxModel* VoxModel = Cast<AVoxModel>(HitResult.GetActor()))
 		{
 			VoxModel->ModifyVoxel(
 				VoxModel->WorldToModelPosition(HitResult.Location - HitResult.Normal),
-				EBlock::Air);
+				EBlock::Stone);
 		}
 	}
 }

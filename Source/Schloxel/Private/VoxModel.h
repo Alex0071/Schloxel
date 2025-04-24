@@ -23,10 +23,10 @@ public:
 	FIntVector WorldToModelPosition(const FVector& WorldPosition) const
 	{
 		FVector LocalPosition = WorldPosition - GetActorLocation();
-		// Add back half dimensions on X and Y since model is centered on those axes
+
 		LocalPosition.X += (ModelDimensions.X * VoxelSize * 0.5f);
 		LocalPosition.Y += (ModelDimensions.Y * VoxelSize * 0.5f);
-		// Z stays as is since pivot is at bottom
+
 		return FIntVector(
 			(LocalPosition.X / VoxelSize),
 			(LocalPosition.Y / VoxelSize),
@@ -54,8 +54,6 @@ public:
 	TArray<EBlock> Blocks;
 
 	void ApplyMesh();
-
-	
 
 protected:
 	virtual void BeginPlay() override;

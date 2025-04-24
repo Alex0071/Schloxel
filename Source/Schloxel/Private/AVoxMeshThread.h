@@ -10,7 +10,6 @@ class AVoxMeshThread : FRunnable
 public:
 	AVoxMeshThread(AVoxModel* _VoxModel);
 
-	// FRunnable interface implementations
 	virtual bool Init() override;
 	virtual uint32 Run() override;
 	virtual void Exit() override;

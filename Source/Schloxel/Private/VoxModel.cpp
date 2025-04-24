@@ -13,7 +13,6 @@ AVoxModel::AVoxModel()
 	MeshComponent->SetCastShadow(true);
 	MeshComponent->SetMobility(EComponentMobility::Static);
 
-	// Enable collision for the mesh section
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	MeshComponent->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
@@ -77,7 +76,9 @@ void AVoxModel::ModifyVoxel(const FIntVector Position, const EBlock Block)
 				{
 					const int index = CurrentPos.X + CurrentPos.Y * ModelDimensions.X +
 						CurrentPos.Z * (ModelDimensions.X * ModelDimensions.Y);
-					Blocks[index] = Block;
+
+					if (index >= 0 && index < Blocks.Num())
+						Blocks[index] = Block;
 				}
 			}
 		}
@@ -126,7 +127,7 @@ void AVoxModel::ApplyMesh()
 				const FRealtimeMeshSectionKey SectionKey = FRealtimeMeshSectionKey::CreateForPolyGroup(GroupKey, 0);
 
 				RealtimeMesh->CreateSectionGroup(GroupKey, StreamSet,
-												 FRealtimeMeshSectionGroupConfig(ERealtimeMeshSectionDrawType::Static));
+				                                 FRealtimeMeshSectionGroupConfig(ERealtimeMeshSectionDrawType::Static));
 				RealtimeMesh->UpdateSectionConfig(SectionKey, FRealtimeMeshSectionConfig(0), true);
 			}
 		}

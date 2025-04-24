@@ -12,7 +12,7 @@ public class Schloxel : ModuleRules
 			{ "Core", "CoreUObject", "Engine", "InputCore"});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
-			{ "ProceduralMeshComponent", "RealtimeMeshComponent"
+			{ "ProceduralMeshComponent", "RealtimeMeshComponent", "Niagara"
 			});
 		
 		CppStandard = CppStandardVersion.Cpp20;

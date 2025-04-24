@@ -19,7 +19,7 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 		return false;
 	}
 
-	// First calculate the total bounds needed
+
 	FIntVector MinBounds(MAX_int32, MAX_int32, MAX_int32);
 	FIntVector MaxBounds(MIN_int32, MIN_int32, MIN_int32);
 
@@ -28,10 +28,10 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 		const ogt_vox_instance& Instance = Scene->instances[i];
 		const ogt_vox_model* Model = Scene->models[Instance.model_index];
 
-		// Get instance transform
+
 		FVector Position(Instance.transform.m30, Instance.transform.m31, Instance.transform.m32);
 
-		// Update bounds
+
 		MinBounds.X = FMath::Min(MinBounds.X, FMath::FloorToInt(Position.X));
 		MinBounds.Y = FMath::Min(MinBounds.Y, FMath::FloorToInt(Position.Y));
 		MinBounds.Z = FMath::Min(MinBounds.Z, FMath::FloorToInt(Position.Z));
@@ -41,7 +41,7 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 		MaxBounds.Z = FMath::Max(MaxBounds.Z, FMath::CeilToInt(Position.Z + Model->size_z));
 	}
 
-	// Set final dimensions
+
 	ModelDimensions = MaxBounds - MinBounds;
 	const int32 TotalVoxels = ModelDimensions.X * ModelDimensions.Y * ModelDimensions.Z;
 	VoxelData.SetNum(TotalVoxels, EAllowShrinking::No);
@@ -52,7 +52,7 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 		VoxelData[i] = EBlock::Air;
 	}
 
-	// Add each instance to the combined volume
+
 	for (uint32 i = 0; i < Scene->num_instances; i++)
 	{
 		const ogt_vox_instance& Instance = Scene->instances[i];
@@ -67,9 +67,9 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 		);
 
 		FVector Position(Instance.transform.m30, Instance.transform.m31, Instance.transform.m32);
-		Position -= FVector(MinBounds); // Offset by MinBounds to start at 0,0,0
+		Position -= FVector(MinBounds);
 
-		// Copy voxels into combined volume
+
 		for (uint32 z = 0; z < Model->size_z; z++)
 		{
 			for (uint32 y = 0; y < Model->size_y; y++)
@@ -80,7 +80,6 @@ bool UVoxImporter::LoadVoxFile(const FString& FilePath)
 						size_y];
 					if (VoxelValue != 0)
 					{
-						// Apply rotation to the local position
 						FVector LocalPos(x, y, z);
 						FVector RotatedPos = RotationMatrix.TransformVector(LocalPos);
 

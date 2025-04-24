@@ -254,37 +254,37 @@ void AVoxMeshThread::GenerateFaceVertices(int32 Dir, const FVector& BasePos, con
 {
     switch (Dir)
     {
-    case 0: // Right
+    case 0: 
         Vertices.Add(BasePos + FVector(Scale, 0.0f, 0.0f) + CenterOffset);
         Vertices.Add(BasePos + FVector(Scale, Size.Y, 0.0f) + CenterOffset);
         Vertices.Add(BasePos + FVector(Scale, 0.0f, Size.Z) + CenterOffset);
         Vertices.Add(BasePos + FVector(Scale, Size.Y, Size.Z) + CenterOffset);
         break;
-    case 1: // Left
+    case 1: 
         Vertices.Add(BasePos + CenterOffset);
         Vertices.Add(BasePos + FVector(0.0f, Size.Y, 0.0f) + CenterOffset);
         Vertices.Add(BasePos + FVector(0.0f, 0.0f, Size.Z) + CenterOffset);
         Vertices.Add(BasePos + FVector(0.0f, Size.Y, Size.Z) + CenterOffset);
         break;
-    case 2: // Forward
+    case 2: 
         Vertices.Add(BasePos + FVector(0.0f, Scale, 0.0f) + CenterOffset);
         Vertices.Add(BasePos + FVector(Size.X, Scale, 0.0f) + CenterOffset);
         Vertices.Add(BasePos + FVector(0.0f, Scale, Size.Z) + CenterOffset);
         Vertices.Add(BasePos + FVector(Size.X, Scale, Size.Z) + CenterOffset);
         break;
-    case 3: // Back
+    case 3: 
         Vertices.Add(BasePos + CenterOffset);
         Vertices.Add(BasePos + FVector(Size.X, 0.0f, 0.0f) + CenterOffset);
         Vertices.Add(BasePos + FVector(0.0f, 0.0f, Size.Z) + CenterOffset);
         Vertices.Add(BasePos + FVector(Size.X, 0.0f, Size.Z) + CenterOffset);
         break;
-    case 4: // Up
+    case 4: 
         Vertices.Add(BasePos + FVector(0.0f, 0.0f, Scale) + CenterOffset);
         Vertices.Add(BasePos + FVector(Size.X, 0.0f, Scale) + CenterOffset);
         Vertices.Add(BasePos + FVector(0.0f, Size.Y, Scale) + CenterOffset);
         Vertices.Add(BasePos + FVector(Size.X, Size.Y, Scale) + CenterOffset);
         break;
-    case 5: // Down
+    case 5: 
         Vertices.Add(BasePos + CenterOffset);
         Vertices.Add(BasePos + FVector(0.0f, Size.Y, 0.0f) + CenterOffset);
         Vertices.Add(BasePos + FVector(Size.X, 0.0f, 0.0f) + CenterOffset);
@@ -295,7 +295,7 @@ void AVoxMeshThread::GenerateFaceVertices(int32 Dir, const FVector& BasePos, con
 
 void AVoxMeshThread::GenerateFaceIndices(int32 Dir, int32 StartVertex, TArray<int32>& Triangles)
 {
-    if (Dir == 5) // Bottom faces
+    if (Dir == 5) 
     {
         Triangles.Add(StartVertex);
         Triangles.Add(StartVertex + 2);
@@ -304,7 +304,7 @@ void AVoxMeshThread::GenerateFaceIndices(int32 Dir, int32 StartVertex, TArray<in
         Triangles.Add(StartVertex + 2);
         Triangles.Add(StartVertex + 3);
     }
-    else if (Dir == 1 || Dir == 3) // Left and Back faces
+    else if (Dir == 1 || Dir == 3) 
     {
         Triangles.Add(StartVertex);
         Triangles.Add(StartVertex + 1);
@@ -313,7 +313,7 @@ void AVoxMeshThread::GenerateFaceIndices(int32 Dir, int32 StartVertex, TArray<in
         Triangles.Add(StartVertex + 3);
         Triangles.Add(StartVertex + 2);
     }
-    else // Right, Forward, Up faces
+    else
     {
         Triangles.Add(StartVertex);
         Triangles.Add(StartVertex + 2);
@@ -371,14 +371,14 @@ void AVoxMeshThread::VisualizeChunks()
         // Draw chunk bounds
         DrawDebugBox(
             VoxModel->GetWorld(),
-            (ChunkMin + ChunkMax) * 0.5f, // Box center
-            (ChunkMax - ChunkMin) * 0.5f, // Box extent
+            (ChunkMin + ChunkMax) * 0.5f,
+            (ChunkMax - ChunkMin) * 0.5f, 
             FQuat::Identity,
             ChunkColor,
-            false,  // Persistent
-            5.0f,  // Duration
-            0,     // DepthPriority
-            2.0f   // Thickness
+            false,  
+            5.0f,  
+            0,     
+            2.0f   
         );
     }
 }
