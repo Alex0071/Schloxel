@@ -22,7 +22,9 @@ https://github.com/user-attachments/assets/eca5f606-8aa9-45e0-b005-affc4688e188
 The Mesh is being generated using a [Greedy Meshing Algorithm](https://gedge.ca/blog/2014-08-17-greedy-voxel-meshing/). This way it's much quicker since less vertices are beign generated.
 
 I'm also utilizing unreals multithreading classes ([FRunnable](https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Runtime/Core/HAL/FRunnable)) to split the work on all available threads of the cpu.
-(Right now the landscape generation system is kinda basic tho since i just create a new thread for every chunk that is being created)
+(Right now the landscape generation system is kinda basic tho since i just create a new thread for every chunk that is being created lol).
+
+Atleast the optimazations for the importing of the .vox models is more advanced. Here i split the Model on it's Z axis and divide it by the number of threads my cpu has availible. This way when i modify the mesh by making a hole in it, the work for recalculation is being split. (You can see the visualization of the threads in the first video).
 
 ```c++
 void AVoxModel::ApplyMesh()
