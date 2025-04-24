@@ -1,9 +1,5 @@
 # Schloxel
 
-![Schloxel(1)](https://github.com/user-attachments/assets/7cede4f4-9f97-4c54-a8c1-71c8ac67e9b4)
-
-
-
 Multithreaded Procedural Generation of Voxels via a Heightmap,
 
 .vox file importer and modification of voxels. Build on top of UE5.
