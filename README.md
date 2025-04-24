@@ -1,6 +1,7 @@
 # Schloxel
 
-![Schloxel](https://github.com/user-attachments/assets/422609c6-7048-4d23-b3f7-ec71a4b09a1a)
+![Schloxel(1)](https://github.com/user-attachments/assets/7cede4f4-9f97-4c54-a8c1-71c8ac67e9b4)
+
 
 
 Multithreaded Procedural Generation of Voxels via a Heightmap,
