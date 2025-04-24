@@ -26,6 +26,7 @@ I'm also utilizing unreals multithreading classes ([FRunnable](https://dev.epicg
 
 Atleast the optimazations for the importing of the .vox models is more advanced. Here i split the Model on it's Z axis and divide it by the number of threads my cpu has availible. This way when i modify the mesh by making a hole in it, the work for recalculation is being split. (You can see the visualization of the threads in the first video).
 
+At the end, i am using the lambda function `AsyncTask` to actually apply the Mesh. Why? See, right now the mesh calcution is happening on a background thread. But you need to be on the `GameThread` to apply it.
 ```c++
 void AVoxModel::ApplyMesh()
 {
