@@ -19,7 +19,7 @@ https://github.com/user-attachments/assets/eca5f606-8aa9-45e0-b005-affc4688e188
 ---
 
 ## Technical details (kinda) 👾
-The Mesh is being generated using a [Greedy Meshing Algorithm] (https://gedge.ca/blog/2014-08-17-greedy-voxel-meshing/)
+The Mesh is being generated using a [Greedy Meshing Algorithm](https://gedge.ca/blog/2014-08-17-greedy-voxel-meshing/)
 
 ```c++
 void AVoxModel::ApplyMesh()
