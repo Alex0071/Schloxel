@@ -20,5 +20,5 @@ void AVoxModel::ApplyMesh()
 		{
 			TQueue<FVoxMeshData>::FElementType data;
 			if (MeshDataQueue.Dequeue(data))
-			{
+			{...
 ```
