@@ -6,13 +6,13 @@
 
 ## Showcase 📹
 
-** Voxel modification
+** Voxel modification **
 
 https://github.com/user-attachments/assets/fea56c04-8a06-49ea-92d9-911816f47987
 
 ---
 
-** Procedural Generation using a Heightmap
+** Procedural Generation using a Heightmap **
 
 https://github.com/user-attachments/assets/eca5f606-8aa9-45e0-b005-affc4688e188
 
